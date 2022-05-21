@@ -138,7 +138,7 @@ static const char *colorname[] = {
 	/* Cursor color */
 	"white",
 	/* Background color */
-	"black" 
+	"black"
 };
 
 
@@ -210,7 +210,7 @@ ResourcePref resources[] = {
 	{ "color13",			STRING,	&colorname[13] },
 	{ "color14",			STRING,	&colorname[14] },
 	{ "color15",			STRING,	&colorname[15] },
-	{ "background",		STRING,	&colorname[256] }, 
+	{ "background",		STRING,	&colorname[256] },
 	{ "foreground",		STRING,	&colorname[257] },
 	{ "cursorColor",		STRING,	&colorname[258] },
 	{ "termname",			STRING,	&termname },
@@ -242,6 +242,7 @@ static MouseShortcut mshortcuts[] = {
 /* Internal keyboard shortcuts. */
 #define MODKEY Mod1Mask
 #define TERMMOD (ControlMask|ShiftMask)
+#define MODSHIFT (ShiftMask|Mod1Mask)
 
 /* My own defined commands */
 static char* nonewline[] = { "/bin/sh", "-c", "xclip -o -r", "selpaste", NULL};
@@ -252,8 +253,8 @@ static Shortcut shortcuts[] = {
 	{ ControlMask,          XK_Print,       toggleprinter,  {.i =  0} },
 	{ ShiftMask,            XK_Print,       printscreen,    {.i =  0} },
 	{ XK_ANY_MOD,           XK_Print,       printsel,       {.i =  0} },
-	/* TODO: add MODKEY|ShiftMask functionality to ST like in DWM (for zoom) */
-	{ TERMMOD,              XK_equal,       zoom,           {.f = +1} },
+	/* TODO: add Mod1Mask|ShiftMask functionality to ST like in DWM (for zoom) */
+	{ MODSHIFT,             XK_equal,       zoom,           {.f = +1} },
 	{ MODKEY,               XK_minus,       zoom,           {.f = -1} },
 	{ MODKEY,		         XK_equal,       zoomreset,      {.f =  0} },
 	{ TERMMOD,              XK_C,           clipcopy,       {.i =  0} },
