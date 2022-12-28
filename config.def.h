@@ -9,7 +9,13 @@
 
 /* Primary font for ST */
 static char *font = "Terminus:pixelsize=32:antialias=true:autohint=true";
-static int borderpx = 2;
+/* Fallback fonts */
+static char *font2[] = {
+   "Noto Color Emoji:pixelsize=32:antialias=true:autohint=true"
+};
+
+/* Padding of the terminal */
+static int borderpx = 20;
 
 /*
    What program is proceeded by st depends of these precedence rules:
