@@ -27,8 +27,17 @@ static int borderpx = 20;
 */
 static char *shell = "/bin/sh";
 char *utmp = NULL;
-/* Scroll program. To enable, set to a non-empty string e.g. "scroll" */
-char *scroll = NULL;
+
+/*
+   Set this to NULL if you do not want scrollback (default).
+   If you do want scroll, you must install st's experimental
+   scroll program (git clone git://git.suckless.org/scroll).
+   Once you make install it, add the full path to the
+   now installed scroll program below. Reminder that this is
+   in an experimental state and has several bugs.
+*/
+char *scroll = "/usr/local/bin/scroll";
+
 /* TTY arguments. See man stty(1) */
 char *stty_args = "stty raw pass8 nl -echo -iexten -cstopb 38400";
 
