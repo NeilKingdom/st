@@ -25,7 +25,7 @@ static int borderpx = 20;
 	4. Value of shell in /etc/passwd
 	5. Value of shell in config.h
 */
-static char *shell = "/bin/sh";
+static char *shell = "/bin/zsh";
 char *utmp = NULL;
 
 /*
@@ -106,7 +106,7 @@ char *termname = "st-256color";
 
    stty tabs
 */
-unsigned int tabspaces = 8;
+unsigned int tabspaces = 3;
 
 /* Background opacity */
 float alpha = 0.9f;
@@ -197,6 +197,42 @@ static unsigned int defaultattr = 11;
 static uint forcemousemod = ShiftMask;
 
 /*
+   Xresources preferences to load at startup
+*/
+ResourcePref resources[] = {
+     { "font",         STRING,  &font },
+     { "color0",       STRING,  &colorname[0] },
+     { "color1",       STRING,  &colorname[1] },
+     { "color2",       STRING,  &colorname[2] },
+     { "color3",       STRING,  &colorname[3] },
+     { "color4",       STRING,  &colorname[4] },
+     { "color5",       STRING,  &colorname[5] },
+     { "color6",       STRING,  &colorname[6] },
+     { "color7",       STRING,  &colorname[7] },
+     { "color8",       STRING,  &colorname[8] },
+     { "color9",       STRING,  &colorname[9] },
+     { "color10",      STRING,  &colorname[10] },
+     { "color11",      STRING,  &colorname[11] },
+     { "color12",      STRING,  &colorname[12] },
+     { "color13",      STRING,  &colorname[13] },
+     { "color14",      STRING,  &colorname[14] },
+     { "color15",      STRING,  &colorname[15] },
+     { "background",   STRING,  &colorname[256] },
+     { "foreground",   STRING,  &colorname[257] },
+     { "cursorColor",  STRING,  &colorname[258] },
+     { "termname",     STRING,  &termname },
+     { "shell",        STRING,  &shell },
+     { "minlatency",   INTEGER, &minlatency },
+     { "maxlatency",   INTEGER, &maxlatency },
+     { "blinktimeout", INTEGER, &blinktimeout },
+     { "bellvolume",   INTEGER, &bellvolume },
+     { "tabspaces",    INTEGER, &tabspaces },
+     { "borderpx",     INTEGER, &borderpx },
+     { "cwscale",      FLOAT,   &cwscale },
+     { "chscale",      FLOAT,   &chscale },
+};
+
+/*
    Internal mouse shortcuts.
    Beware that overloading Button1 will disable the selection.
 */
@@ -222,17 +258,14 @@ static Shortcut shortcuts[] = {
 	{ TERMMOD,           XK_Prior,       zoom,           { .f = +1 }},
 	{ TERMMOD,           XK_Next,        zoom,           { .f = -1 }},
 	{ TERMMOD,           XK_Home,        zoomreset,      { .f =  0 }},
-<<<<<<< HEAD
 	{ TERMMOD,           XK_c,           clipcopy,       { .i =  0 }}, /* Copy from clipboard */
 	{ MODKEY,            XK_v,           clippaste,      { .i =  0 }}, /* Paste from clipboard */
 	{ MODKEY,            XK_Y,           selpaste,       { .i =  0 }},
 	{ ShiftMask,         XK_Insert,      selpaste,       { .i =  0 }},
-=======
 	{ MODKEY,            XK_c,           clipcopy,       { .i =  0 }}, /* Copy to clipboard */
 	{ MODKEY,            XK_v,           clippaste,      { .i =  0 }}, /* Paste from clipboard */
 	{ TERMMOD,           XK_Y,           selpaste,       { .i =  0 }}, /* Copy to selection */
 	{ ShiftMask,         XK_Insert,      selpaste,       { .i =  0 }}, /* Paste from selection */
->>>>>>> 2ba252f (Added clipboard patch)
 	{ TERMMOD,           XK_Num_Lock,    numlock,        { .i =  0 }},
 	{ TERMMOD,           XK_Return,      newterm,        { .i =  0 }}, /* Fork a new terminal beginning in the parent terminal's working directory */
 };
