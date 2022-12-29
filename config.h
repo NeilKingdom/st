@@ -222,10 +222,17 @@ static Shortcut shortcuts[] = {
 	{ TERMMOD,           XK_Prior,       zoom,           { .f = +1 }},
 	{ TERMMOD,           XK_Next,        zoom,           { .f = -1 }},
 	{ TERMMOD,           XK_Home,        zoomreset,      { .f =  0 }},
+<<<<<<< HEAD
 	{ TERMMOD,           XK_c,           clipcopy,       { .i =  0 }}, /* Copy from clipboard */
 	{ MODKEY,            XK_v,           clippaste,      { .i =  0 }}, /* Paste from clipboard */
 	{ MODKEY,            XK_Y,           selpaste,       { .i =  0 }},
 	{ ShiftMask,         XK_Insert,      selpaste,       { .i =  0 }},
+=======
+	{ MODKEY,            XK_c,           clipcopy,       { .i =  0 }}, /* Copy to clipboard */
+	{ MODKEY,            XK_v,           clippaste,      { .i =  0 }}, /* Paste from clipboard */
+	{ TERMMOD,           XK_Y,           selpaste,       { .i =  0 }}, /* Copy to selection */
+	{ ShiftMask,         XK_Insert,      selpaste,       { .i =  0 }}, /* Paste from selection */
+>>>>>>> 2ba252f (Added clipboard patch)
 	{ TERMMOD,           XK_Num_Lock,    numlock,        { .i =  0 }},
 	{ TERMMOD,           XK_Return,      newterm,        { .i =  0 }}, /* Fork a new terminal beginning in the parent terminal's working directory */
 };
