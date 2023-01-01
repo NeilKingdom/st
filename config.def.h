@@ -8,11 +8,29 @@
 /*** Appearance ***/
 
 /* Primary font for ST */
-static char *font = "Terminus:pixelsize=32:antialias=true:autohint=true";
+/*
+   NOTE: Unfortunately, Terminus is not a vector font
+   and the max size is 32. This is legible on a 4K monitor, but
+   friends may have trouble viewing text if on a video call. There
+   is no solution to this until the maintainers add more sizes.
+
+   Additional Note: If you are like me and decide to compile dmenu
+   from source, you may run into the same strange bug as me where
+   your font size suddenly becomes massive. The solution is simply
+   to reduce the font size (I've set mine to 14). This appears to
+   look identical to how it did before compiling dmenu, but I'm
+   still not sure why this happens in the first place.
+*/
+static char *font = "Terminus:style=Regular:size=14:antialias=true";
 /* Fallback fonts */
-static char *font2[] = {
-   "Noto Color Emoji:pixelsize=32:antialias=true:autohint=true"
-};
+/*
+   NOTE: JoyPixels is one of the only fonts that supports colored
+   emojis and works with ST. It is a vector font, unlike Terminus,
+   so it requires the pixelsize attribute to be rasterized at
+   rather than specifying a font pt size (like with terminus).
+   This is also why the antialias attribute is unnecessary.
+*/
+static char *font2[1] = { "JoyPixels:style=Regular:pixelsize=22" };
 
 /* Padding of the terminal */
 static int borderpx = 20;
@@ -110,6 +128,7 @@ unsigned int tabspaces = 3;
 
 /* Background opacity */
 float alpha = 0.9f;
+float alpha2; /* Used for my own change alpha patch */
 
 /* Terminal colors (16 first used in escape sequence) */
 static const char *colorname[] = {
@@ -144,10 +163,10 @@ static const char *colorname[] = {
 
 
 /* Default colors (colorname index) */
-unsigned int defaultfg = 258;          /* FG */
-unsigned int defaultbg = 259;          /* BG */
-unsigned int defaultcs = 256;          /* Cursor */
-static unsigned int defaultrcs = 257;  /* Reverse cursor */
+unsigned int defaultfg = 258;         /* FG */
+unsigned int defaultbg = 259;         /* BG */
+unsigned int defaultcs = 256;         /* Cursor */
+static unsigned int defaultrcs = 257; /* Reverse cursor */
 
 /*
    List of available terminal cursor shapes:
@@ -171,7 +190,12 @@ static unsigned int cursorthickness = 2;
 const int boxdraw = 1;
 const int boxdraw_bold = 1;
 
-/* Braille (U28XX):  1: render as adjacent "pixels",  0: use font */
+/*
+   Braille (U28XX):
+
+   0: Use font
+   1: Render as adjacent "pixels"
+*/
 const int boxdraw_braille = 1;
 
 /* Number of character columns and rows (default: 80x24) */
@@ -250,24 +274,27 @@ static MouseShortcut mshortcuts[] = {
 #define TERMMOD (ControlMask|ShiftMask)
 
 static Shortcut shortcuts[] = {
-	/* Mask              Keysym          Function        Argument   */
-	{ XK_ANY_MOD,        XK_Break,       sendbreak,      { .i =  0 }},
-	{ ControlMask,       XK_Print,       toggleprinter,  { .i =  0 }},
-	{ ShiftMask,         XK_Print,       printscreen,    { .i =  0 }},
-	{ XK_ANY_MOD,        XK_Print,       printsel,       { .i =  0 }},
-	{ TERMMOD,           XK_Prior,       zoom,           { .f = +1 }},
-	{ TERMMOD,           XK_Next,        zoom,           { .f = -1 }},
-	{ TERMMOD,           XK_Home,        zoomreset,      { .f =  0 }},
-	{ TERMMOD,           XK_c,           clipcopy,       { .i =  0 }}, /* Copy from clipboard */
-	{ MODKEY,            XK_v,           clippaste,      { .i =  0 }}, /* Paste from clipboard */
-	{ MODKEY,            XK_Y,           selpaste,       { .i =  0 }},
-	{ ShiftMask,         XK_Insert,      selpaste,       { .i =  0 }},
-	{ MODKEY,            XK_c,           clipcopy,       { .i =  0 }}, /* Copy to clipboard */
-	{ MODKEY,            XK_v,           clippaste,      { .i =  0 }}, /* Paste from clipboard */
-	{ TERMMOD,           XK_Y,           selpaste,       { .i =  0 }}, /* Copy to selection */
-	{ ShiftMask,         XK_Insert,      selpaste,       { .i =  0 }}, /* Paste from selection */
-	{ TERMMOD,           XK_Num_Lock,    numlock,        { .i =  0 }},
-	{ TERMMOD,           XK_Return,      newterm,        { .i =  0 }}, /* Fork a new terminal beginning in the parent terminal's working directory */
+	/* Mask              Keysym            Function        Argument   */
+	{ XK_ANY_MOD,        XK_Break,         sendbreak,      { .i =  0 }},
+	{ ControlMask,       XK_Print,         toggleprinter,  { .i =  0 }},
+	{ ShiftMask,         XK_Print,         printscreen,    { .i =  0 }},
+	{ XK_ANY_MOD,        XK_Print,         printsel,       { .i =  0 }},
+	{ MODKEY,            XK_minus,         zoom,           { .f = -2 }}, /* Decrease font size */
+	{ MODKEY|ShiftMask,  XK_plus,          zoom,           { .f = +2 }}, /* Increase font size */
+	{ MODKEY,            XK_equal,         zoomreset,      { .f =  0 }}, /* Reset font size */
+	{ TERMMOD,           XK_c,             clipcopy,       { .i =  0 }}, /* Copy from clipboard */
+	{ MODKEY,            XK_v,             clippaste,      { .i =  0 }}, /* Paste from clipboard */
+	{ MODKEY,            XK_Y,             selpaste,       { .i =  0 }},
+	{ ShiftMask,         XK_Insert,        selpaste,       { .i =  0 }},
+	{ MODKEY,            XK_c,             clipcopy,       { .i =  0 }}, /* Copy to clipboard */
+	{ MODKEY,            XK_v,             clippaste,      { .i =  0 }}, /* Paste from clipboard */
+	{ TERMMOD,           XK_Y,             selpaste,       { .i =  0 }}, /* Copy to selection */
+	{ ShiftMask,         XK_Insert,        selpaste,       { .i =  0 }}, /* Paste from selection */
+	{ TERMMOD,           XK_Num_Lock,      numlock,        { .i =  0 }},
+	{ TERMMOD,           XK_Return,        newterm,        { .i =  0 }}, /* Fork a new terminal beginning in the parent terminal's working directory */
+   { MODKEY,            XK_bracketleft,   chgalpha,       { .f = -1 }}, /* Decrease opacity */
+   { MODKEY|ShiftMask,  XK_braceright,    chgalpha,       { .f = +1 }}, /* Increase opacity */
+   { MODKEY,            XK_bracketright,  chgalpha,       { .f =  0 }}, /* Reset alpha */
 };
 
 /*

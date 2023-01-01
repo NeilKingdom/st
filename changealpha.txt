@@ -1,0 +1,41 @@
+These are the steps needed to reproduce the diff for the change alpha fix:
+
+1. config.def.h line 112:
+
+float alpha = 0.9f;
++ float alpha2;
+
+2. config.def.h line 272:
+
++ { MODKEY,            XK_bracketleft,   chg_alpha,      { .f = -1 }}, /* Decrease opacity */
++ { MODKEY|ShiftMask,  XK_braceright,    chg_alpha,      { .f = +1 }}, /* Increase opacity */
++ { MODKEY,            XK_bracketright,  chg_alpha,      { .f =  0 }}, /* Reset alpha */
+
+3. st.h line 96:
+
+void toggleprinter(const Arg *);
++ chg_alpha(const Arg *);
+
+4. st.h line 145:
+
+- extern float alpha;
++ extern float alpha, alpha2;
+
+5. x.c line 1540:
+
++ void chg_alpha(const Arg *arg)
++ {
++    if (arg->f == -1.0f && alpha >= 0.1f)
++       alpha -= 0.1f;
++    else if (arg->f == 1.0f && alpha <= 0.9f)
++       alpha += 0.1f;
++    else if (arg->f == 0.0f)
++       alpha = alpha2;
++    else
++       return;
++
++    dc.col[defaultbg].col.alpha = (unsigned short)(0xFFFF * alpha);
++    /* Required to remove artifacting from borderpx */
++    cresize(0, 0);
++    redraw();
++ }

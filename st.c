@@ -818,8 +818,7 @@ ttynew(const char *line, char *cmd, const char *out, char **args)
 	return cmdfd;
 }
 
-size_t
-ttyread(void)
+size_t ttyread(void)
 {
 	static char buf[BUFSIZ];
 	static int buflen = 0;
@@ -844,8 +843,7 @@ ttyread(void)
 	}
 }
 
-void
-ttywrite(const char *s, size_t n, int may_echo)
+void ttywrite(const char *s, size_t n, int may_echo)
 {
 	const char *next;
 

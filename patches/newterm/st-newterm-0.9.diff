@@ -23,7 +23,7 @@ index 91ab8ca..7c75246 100644
  	{ TERMMOD,              XK_Num_Lock,    numlock,        {.i =  0} },
 +	{ TERMMOD,              XK_Return,      newterm,        {.i =  0} },
  };
- 
+
  /*
 diff --git a/st.c b/st.c
 index 62def59..0261283 100644
@@ -32,7 +32,7 @@ index 62def59..0261283 100644
 @@ -20,6 +20,8 @@
  #include "st.h"
  #include "win.h"
- 
+
 +extern char *argv0;
 +
  #if   defined(__linux)
@@ -40,7 +40,7 @@ index 62def59..0261283 100644
  #elif defined(__OpenBSD__) || defined(__NetBSD__) || defined(__APPLE__)
 @@ -153,6 +155,7 @@ typedef struct {
  } STREscape;
- 
+
  static void execsh(char *, char **);
 +static int chdir_by_pid(pid_t pid);
  static void stty(char **);
@@ -57,7 +57,7 @@ index 62def59..0261283 100644
 @@ -1054,6 +1058,40 @@ tswapscreen(void)
  	tfulldirt();
  }
- 
+
 +void
 +newterm(const Arg* a)
 +{
@@ -102,11 +102,11 @@ index fd3b0d8..f2b03b0 100644
 @@ -81,6 +81,7 @@ void die(const char *, ...);
  void redraw(void);
  void draw(void);
- 
+
 +void newterm(const Arg *);
  void printscreen(const Arg *);
  void printsel(const Arg *);
  void sendbreak(const Arg *);
--- 
+--
 2.38.0
 
