@@ -24,13 +24,15 @@
 static char *font = "Terminus:style=Regular:size=14:antialias=true";
 /* Fallback fonts */
 /*
-   NOTE: JoyPixels is one of the only fonts that supports colored
-   emojis and works with ST. It is a vector font, unlike Terminus,
-   so it requires the pixelsize attribute to be rasterized at
-   rather than specifying a font pt size (like with terminus).
-   This is also why the antialias attribute is unnecessary.
+   NOTE: You no longer require the lib-xft-bgra patch anymore. This
+   can be uninstalled and replaced with the latest version of libXft.
+   Google provides Noto Color Emoji (noto-fonts-emoji package on
+   Arch). It is a vector font, unlike Terminus, so it requires the
+   pixelsize attribute to be rasterized at rather than specifying a
+   font pt size (like with terminus). This is also why the antialias
+   attribute is unnecessary.
 */
-static char *font2[1] = { "JoyPixels:style=Regular:pixelsize=22" };
+static char *font2[1] = { "Noto Color Emoji:style=Regular:pixelsize=22" };
 
 /* Padding of the terminal */
 static int borderpx = 20;
