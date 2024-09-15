@@ -1647,7 +1647,7 @@ void chgalpha(const Arg *arg)
 {
    if (arg->f == -1.0f && alpha >= 0.1f)
       alpha -= 0.1f;
-   else if (arg->f == 1.0f && alpha <= 0.9f)
+   else if (arg->f == 1.0f && alpha < 1.0f)
       alpha += 0.1f;
    else if (arg->f == 0.0f)
       alpha = alpha2;

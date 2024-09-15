@@ -21,7 +21,7 @@
    look identical to how it did before compiling dmenu, but I'm
    still not sure why this happens in the first place.
 */
-static char *font = "Terminus:style=Regular:size=14:antialias=true";
+static char *font = "Terminess Nerd Font:style=Regular:size=14:antialias=true";
 /* Fallback fonts */
 /*
    NOTE: You no longer require the lib-xft-bgra patch anymore. This
