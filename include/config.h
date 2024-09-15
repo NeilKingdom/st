@@ -284,7 +284,7 @@ static Shortcut shortcuts[] = {
 	{ MODKEY,            XK_minus,         zoom,           { .f = -2 }}, /* Decrease font size */
 	{ MODKEY|ShiftMask,  XK_plus,          zoom,           { .f = +2 }}, /* Increase font size */
 	{ MODKEY,            XK_equal,         zoomreset,      { .f =  0 }}, /* Reset font size */
-	{ TERMMOD,           XK_c,             clipcopy,       { .i =  0 }}, /* Copy from clipboard */
+	{ MODKEY,            XK_c,             clipcopy,       { .i =  0 }}, /* Copy from clipboard */
 	{ MODKEY,            XK_v,             clippaste,      { .i =  0 }}, /* Paste from clipboard */
 	{ MODKEY,            XK_Y,             selpaste,       { .i =  0 }},
 	{ ShiftMask,         XK_Insert,        selpaste,       { .i =  0 }},
@@ -293,10 +293,10 @@ static Shortcut shortcuts[] = {
 	{ TERMMOD,           XK_Y,             selpaste,       { .i =  0 }}, /* Copy to selection */
 	{ ShiftMask,         XK_Insert,        selpaste,       { .i =  0 }}, /* Paste from selection */
 	{ TERMMOD,           XK_Num_Lock,      numlock,        { .i =  0 }},
-	{ TERMMOD,           XK_Return,        newterm,        { .i =  0 }}, /* Fork a new terminal beginning in the parent terminal's working directory */
-   { MODKEY,            XK_bracketleft,   chgalpha,       { .f = -1 }}, /* Decrease opacity */
-   { MODKEY|ShiftMask,  XK_braceright,    chgalpha,       { .f = +1 }}, /* Increase opacity */
-   { MODKEY,            XK_bracketright,  chgalpha,       { .f =  0 }}, /* Reset alpha */
+	{ MODKEY,            XK_Return,        newterm,        { .i =  0 }}, /* Fork a new terminal beginning in the parent terminal's working directory */
+    { MODKEY,            XK_bracketleft,   chgalpha,       { .f = -1 }}, /* Decrease opacity */
+    { MODKEY|ShiftMask,  XK_braceright,    chgalpha,       { .f = +1 }}, /* Increase opacity */
+    { MODKEY,            XK_bracketright,  chgalpha,       { .f =  0 }}, /* Reset alpha */
 };
 
 /*

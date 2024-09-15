@@ -1,5 +1,3 @@
-config.h
-.gitmodules
-*.orig
-*.rej
-*.o
+st
+obj
+res/patches
