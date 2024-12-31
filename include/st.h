@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <sys/types.h>
 
-/* macros */
+/* Macros */
 #define MIN(a, b)		    ((a) < (b) ? (a) : (b))
 #define MAX(a, b)		    ((a) < (b) ? (b) : (a))
 #define LEN(a)			    (sizeof(a) / sizeof(a)[0])
@@ -35,7 +35,7 @@ enum glyph_attribute {
     ATTR_WIDE       = 1 << 9,
     ATTR_WDUMMY     = 1 << 10,
     ATTR_BOXDRAW    = 1 << 11,
-    ATTR_BOLD_FAINT = ATTR_BOLD | ATTR_FAINT,
+    ATTR_BOLD_FAINT = (ATTR_BOLD | ATTR_FAINT),
 };
 
 enum drawing_mode {
@@ -69,10 +69,10 @@ typedef uint_least32_t Rune;
 
 #define Glyph Glyph_
 typedef struct {
-    Rune u;           /* character code */
-    ushort mode;      /* attribute flags */
-    uint32_t fg;      /* foreground  */
-    uint32_t bg;      /* background  */
+    Rune u;           /* Character code */
+    ushort mode;      /* Attribute flags */
+    uint32_t fg;      /* Foreground  */
+    uint32_t bg;      /* Background  */
 } Glyph;
 
 typedef Glyph *Line;

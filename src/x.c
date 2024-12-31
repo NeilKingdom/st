@@ -108,7 +108,8 @@ typedef XftGlyphFontSpec GlyphFontSpec;
 typedef struct {
     int tw, th;                /* TTY width and height */
     int w, h;                  /* Window width and height */
-    int hborderpx, vborderpx;
+    int hborderpx;
+    int vborderpx;
     int ch;                    /* Character height */
     int cw;                    /* Character width */
     int mode;                  /* Window state/mode flags */
@@ -121,8 +122,12 @@ typedef struct {
     Colormap cmap;
     Window win;
     Drawable buf;
-    GlyphFontSpec *specbuf; /* Font spec buffer used for rendering */
-    Atom xembed, wmdeletewin, netwmname, netwmiconname, netwmpid;
+    GlyphFontSpec *specbuf;     /* Font spec buffer used for rendering */
+    Atom xembed;
+    Atom wmdeletewin;
+    Atom netwmname;
+    Atom netwmiconname;
+    Atom netwmpid;
     /* Anonymous struct */
     struct {
         XIM xim;
@@ -134,23 +139,26 @@ typedef struct {
     Visual *vis;
     XSetWindowAttributes attrs;
     /*
-      Here we use the term "pointer" to differentiate the cursor
-      one sees when hovering the mouse over the terminal from, e.g.,
-      a green rectangle where the text would be entered.
-   */
-    Cursor vpointer, bpointer; /* Visible and hidden pointers */
-    int pointerisvisible;      /* Used for hidecursor patch */
-    int scr;                   /* Monitor index */
-    int isfixed;               /* Is fixed geometry? */
-    int depth;                 /* Bit depth */
-    int l, t;                  /* Left and top offset */
-    int gm;                    /* geometry mask */
+        Here we use the term "pointer" to differentiate the cursor
+        one sees when hovering the mouse over the terminal from, e.g.,
+        a green rectangle where the text would be entered.
+    */
+    Cursor vpointer;            /* Visible pointer */
+    Cursor bpointer;            /* Hidden pointer */
+    int pointerisvisible;       /* Used for hidecursor patch */
+    int scr;                    /* Monitor index */
+    int isfixed;                /* Is fixed geometry? */
+    int depth;                  /* Bit depth */
+    int l;                      /* Left offset */
+    int t;                      /* Top offset */
+    int gm;                     /* Geometry mask */
 } XWindow;
 
 /* X's way of handling copy/paste */
 typedef struct {
     Atom xtarget;
-    char *primary, *clipboard;
+    char *primary;
+    char *clipboard;
     struct timespec tclick1;
     struct timespec tclick2;
 } XSelection;
@@ -175,7 +183,10 @@ typedef struct {
 typedef struct {
     Color *col;
     size_t collen;
-    Font font, bfont, ifont, ibfont;
+    Font font;      /* Regular font */
+    Font bfont;     /* Bold font */
+    Font ifont;     /* Italic font */
+    Font ibfont;    /* Italic bold font */
     GC gc;
 } DC;
 
@@ -246,15 +257,15 @@ static void (*handler[LASTEvent])(XEvent *) = {
     [ButtonPress] = bpress,
     [ButtonRelease] = brelease,
     /*
-      Uncomment if you want the selection to disappear
-      when you select something different in another window.
-   */
+        Uncomment if you want the selection to disappear
+        when you select something different in another window
+    */
     /*[SelectionClear] = selclear_,*/
     [SelectionNotify] = selnotify,
     /*
-      PropertyNotify is only turned on when there is some
-      INCR transfer happening for the selection retrieval.
-   */
+        PropertyNotify is only turned on when there is some
+        INCR transfer happening for the selection retrieval
+    */
     [PropertyNotify] = propnotify,
     [SelectionRequest] = selrequest,
 };
@@ -307,8 +318,7 @@ void clipcopy(const Arg *dummy) {
     free(xsel.clipboard);
     xsel.clipboard = NULL;
 
-    if (xsel.primary != NULL)
-    {
+    if (xsel.primary != NULL) {
         xsel.clipboard = xstrdup(xsel.primary);
         clipboard = XInternAtom(xw.dpy, "CLIPBOARD", 0);
         XSetSelectionOwner(xw.dpy, clipboard, xw.win, CurrentTime);
@@ -347,8 +357,7 @@ void zoomabs(const Arg *arg) {
 void zoomreset(const Arg *arg) {
     Arg larg;
 
-    if (defaultfontsize > 0)
-    {
+    if (defaultfontsize > 0) {
         larg.f = defaultfontsize;
         zoomabs(&larg);
     }
@@ -375,18 +384,15 @@ void mousesel(XEvent *e, int done) {
     int seltype = SEL_REGULAR;
     uint state = e->xbutton.state & ~(Button1Mask | forcemousemod);
 
-    for (type = 1; type < LEN(selmasks); ++type)
-    {
-        if (match(selmasks[type], state))
-        {
+    for (type = 1; type < LEN(selmasks); ++type) {
+        if (match(selmasks[type], state)) {
             seltype = type;
             break;
         }
     }
 
     selextend(evcol(e), evrow(e), seltype, done);
-    if (done)
-    {
+    if (done) {
         setsel(getsel(), e->xbutton.time);
     }
 }
@@ -399,49 +405,26 @@ void mousereport(XEvent *e) {
     char buf[40];
     static int ox, oy;
 
-    if (e->type == MotionNotify)
-    {
-        if (x == ox && y == oy)
-        {
-            return;
-        }
-        if (!IS_SET(MODE_MOUSEMOTION) && !IS_SET(MODE_MOUSEMANY))
-        {
-            return;
-        }
+    if (e->type == MotionNotify) {
+        if (x == ox && y == oy) return;
+        if (!IS_SET(MODE_MOUSEMOTION) && !IS_SET(MODE_MOUSEMANY)) return;
         /* MODE_MOUSEMOTION: No reporting if no button is pressed */
-        if (IS_SET(MODE_MOUSEMOTION) && buttons == 0)
-        {
-            return;
-        }
+        if (IS_SET(MODE_MOUSEMOTION) && buttons == 0) return;
 
-        /*
-         Set btn to lowest numbered pressed button, or 12 if no
-           buttons are pressed
-      */
-        for (btn = 1; btn <= 11 && !(buttons & (1 << (btn-1))); btn++) ;;
+        /* Set btn to lowest numbered pressed button, or 12 if no buttons are pressed */
+        for (btn = 1; btn <= 11 && !(buttons & (1 << (btn-1))); btn++) ;
         code = 32;
     } else {
         btn = e->xbutton.button;
 
         /* Only buttons 1 through 11 can be encoded */
-        if (btn < 1 || btn > 11)
-        {
-            return;
-        }
+        if (btn < 1 || btn > 11) return;
 
-        if (e->type == ButtonRelease)
-        {
+        if (e->type == ButtonRelease) {
             /* MODE_MOUSEX10: No button release reporting */
-            if (IS_SET(MODE_MOUSEX10))
-            {
-                return;
-            }
+            if (IS_SET(MODE_MOUSEX10)) return;
             /* Don't send release events for the scroll wheel */
-            if (btn == 4 || btn == 5)
-            {
-                return;
-            }
+            if (btn == 4 || btn == 5) return;
         }
         code = 0;
     }
@@ -450,10 +433,10 @@ void mousereport(XEvent *e) {
     oy = y;
 
     /*
-      Encode btn into code. If no button is pressed
-      for a motion event in MODE_MOUSEMANY, then encode
-      it as a release.
-   */
+        Encode btn into code. If no button is pressed
+        for a motion event in MODE_MOUSEMANY, then encode
+        it as a release.
+    */
     if ((!IS_SET(MODE_MOUSESGR) && e->type == ButtonRelease) || btn == 12) {
         code += 3;
     } else if (btn >= 8) {
@@ -466,19 +449,19 @@ void mousereport(XEvent *e) {
 
     if (!IS_SET(MODE_MOUSEX10)) {
         code += ((state & ShiftMask)   ?  4 : 0)
-            + ((state & Mod1Mask)    ?  8 : 0) /* Meta key: ALT */
-            + ((state & ControlMask) ? 16 : 0);
+              + ((state & Mod1Mask)    ?  8 : 0)
+              + ((state & ControlMask) ? 16 : 0);
     }
 
     if (IS_SET(MODE_MOUSESGR)) {
         len = snprintf(
-            buf,
-            sizeof(buf),
+            buf, sizeof(buf),
             "\033[<%d;%d;%d%c",
-            code, x+1, y+1, (e->type == ButtonRelease) ? 'm' : 'M'
+            code, x + 1, y + 1,
+            (e->type == ButtonRelease) ? 'm' : 'M'
         );
     } else if (x < 223 && y < 223) {
-        len = snprintf(buf, sizeof(buf), "\033[M%c%c%c", 32+code, 32+x+1, 32+y+1);
+        len = snprintf(buf, sizeof(buf), "\033[M%c%c%c", 32 + code, 32 + x + 1, 32 + y + 1);
     } else {
         return;
     }
@@ -502,10 +485,10 @@ int mouseaction(XEvent *e, uint release) {
     uint state = e->xbutton.state & ~buttonmask(e->xbutton.button);
 
     for (ms = mshortcuts; ms < mshortcuts + LEN(mshortcuts); ms++) {
-        if (ms->release == release &&
-            ms->button == e->xbutton.button &&
-            (match(ms->mod, state) || /* Exact or forced */
-            match(ms->mod, state & ~forcemousemod)))
+        if (ms->release == release
+            && ms->button == e->xbutton.button
+            && (match(ms->mod, state) /* Exact or forced */
+            || match(ms->mod, state & ~forcemousemod)))
         {
             ms->func(&(ms->arg));
             return 1;
@@ -520,8 +503,9 @@ void bpress(XEvent *e) {
     struct timespec now;
     int snap;
 
-    if (1 <= btn && btn <= 11)
-        buttons |= 1 << (btn-1);
+    if (1 <= btn && btn <= 11) {
+        buttons |= 1 << (btn - 1);
+    }
 
     if (IS_SET(MODE_MOUSE) && !(e->xbutton.state & forcemousemod)) {
         mousereport(e);
@@ -573,18 +557,19 @@ void selnotify(XEvent *e) {
     incratom = XInternAtom(xw.dpy, "INCR", 0);
     ofs = 0;
 
-    if (e->type == SelectionNotify)
+    if (e->type == SelectionNotify) {
         property = e->xselection.property;
-    else if (e->type == PropertyNotify)
+    } else if (e->type == PropertyNotify) {
         property = e->xproperty.atom;
+    }
 
     if (property == None) return;
 
     do {
         if (XGetWindowProperty(xw.dpy, xw.win, property, ofs,
-                               BUFSIZ/4, False, AnyPropertyType,
-                               &type, &format, &nitems, &rem,
-                               &data))
+            BUFSIZ/4, False, AnyPropertyType,
+            &type, &format, &nitems, &rem,
+            &data))
         {
             fprintf(stderr, "Clipboard allocation failed\n");
             return;
@@ -592,10 +577,10 @@ void selnotify(XEvent *e) {
 
         if (e->type == PropertyNotify && nitems == 0 && rem == 0) {
             /*
-               If there is some PropertyNotify with no data, then
-               this is the signal of the selection owner that all
-               data has been transferred. We won't need to receive
-               PropertyNotify events anymore.
+                If there is some PropertyNotify with no data, then
+                this is the signal of the selection owner that all
+                data has been transferred. We won't need to receive
+                PropertyNotify events anymore.
             */
             MODBIT(xw.attrs.event_mask, 0, PropertyChangeMask);
             XChangeWindowAttributes(xw.dpy, xw.win, CWEventMask, &xw.attrs);
@@ -603,9 +588,9 @@ void selnotify(XEvent *e) {
 
         if (type == incratom) {
             /*
-               Activate the PropertyNotify events so we receive
-               when the selection owner does send us the next
-               chunk of data.
+                Activate the PropertyNotify events so we receive
+                when the selection owner does send us the next
+                chunk of data.
             */
             MODBIT(xw.attrs.event_mask, 1, PropertyChangeMask);
             XChangeWindowAttributes(xw.dpy, xw.win, CWEventMask, &xw.attrs);
@@ -616,23 +601,25 @@ void selnotify(XEvent *e) {
         }
 
         /*
-           As seen in getsel:
-           Line endings are inconsistent in the terminal and GUI world
-           copy and pasting. When receiving some selection data,
-           replace all '\n' with '\r'.
-           FIXME: Fix the computer world.
+            As seen in getsel:
+            Line endings are inconsistent in the terminal and GUI world
+            copy and pasting. When receiving some selection data,
+            replace all '\n' with '\r'.
         */
         repl = data;
         last = data + nitems * format / 8;
-        while ((repl = memchr(repl, '\n', last - repl)))
+        while ((repl = memchr(repl, '\n', last - repl))) {
             *repl++ = '\r';
+        }
 
-        if (IS_SET(MODE_BRCKTPASTE) && ofs == 0)
+        if (IS_SET(MODE_BRCKTPASTE) && ofs == 0) {
             ttywrite("\033[200~", 6, 0);
+        }
 
         ttywrite((char *)data, nitems * format / 8, 1);
-        if (IS_SET(MODE_BRCKTPASTE) && rem == 0)
+        if (IS_SET(MODE_BRCKTPASTE) && rem == 0) {
             ttywrite("\033[201~", 6, 0);
+        }
 
         XFree(data);
         /* Number of 32-bit chunks returned */
@@ -640,8 +627,8 @@ void selnotify(XEvent *e) {
     } while (rem > 0);
 
     /*
-       Deleting the property again tells the selection owner to send the
-       next data chunk in the property.
+        Deleting the property again tells the selection owner to send the
+        next data chunk in the property.
     */
     XDeleteProperty(xw.dpy, xw.win, (int)property);
 }
@@ -677,13 +664,16 @@ void selrequest(XEvent *e) {
     if (xsre->target == xa_targets) {
         /* Respond with the supported type */
         string = xsel.xtarget;
-        XChangeProperty(xsre->display, xsre->requestor, xsre->property,
-                        XA_ATOM, 32, PropModeReplace, (uchar *) &string, 1);
+        XChangeProperty(
+            xsre->display, xsre->requestor,
+            xsre->property, XA_ATOM, 32,
+            PropModeReplace, (uchar*)&string, 1
+        );
         xev.property = xsre->property;
     } else if (xsre->target == xsel.xtarget || xsre->target == XA_STRING) {
         /*
-           With XA_STRING, non-ASCII characters may be incorrect in the
-           requestor. It is not our problem - use UTF8.
+            With XA_STRING, non-ASCII characters may be incorrect in the
+            requestor. It is not our problem - use UTF-8.
         */
         clipboard = XInternAtom(xw.dpy, "CLIPBOARD", 0);
         if (xsre->selection == XA_PRIMARY) {
@@ -696,15 +686,20 @@ void selrequest(XEvent *e) {
         }
 
         if (seltext != NULL) {
-            XChangeProperty(xsre->display, xsre->requestor, xsre->property, xsre->target,
-                            8, PropModeReplace, (uchar *)seltext, strlen(seltext));
+            XChangeProperty(
+                xsre->display, xsre->requestor,
+                xsre->property, xsre->target,
+                8, PropModeReplace,
+                (uchar*)seltext, strlen(seltext)
+            );
             xev.property = xsre->property;
         }
     }
 
     /* All done. Send a notification to the listener. */
-    if (!XSendEvent(xsre->display, xsre->requestor, 1, 0, (XEvent *) &xev))
+    if (!XSendEvent(xsre->display, xsre->requestor, 1, 0, (XEvent*)&xev)) {
         fprintf(stderr, "Error sending SelectionNotify event\n");
+    }
 }
 
 void setsel(char *str, Time t) {
@@ -714,8 +709,9 @@ void setsel(char *str, Time t) {
     xsel.primary = str;
 
     XSetSelectionOwner(xw.dpy, XA_PRIMARY, xw.win, t);
-    if (XGetSelectionOwner(xw.dpy, XA_PRIMARY) != xw.win)
+    if (XGetSelectionOwner(xw.dpy, XA_PRIMARY) != xw.win) {
         selclear();
+    }
 
     clipcopy(NULL);
 }
@@ -727,24 +723,26 @@ void xsetsel(char *str) {
 void brelease(XEvent *e) {
     int btn = e->xbutton.button;
 
-    if (1 <= btn && btn <= 11)
-        buttons &= ~(1 << (btn-1));
+    if (1 <= btn && btn <= 11) {
+        buttons &= ~(1 << (btn - 1));
+    }
 
     if (IS_SET(MODE_MOUSE) && !(e->xbutton.state & forcemousemod)) {
         mousereport(e);
         return;
     }
 
-    if (mouseaction(e, 1))
+    if (mouseaction(e, 1)) {
         return;
+    }
 
-    if (btn == Button1)
+    if (btn == Button1) {
         mousesel(e, 1);
+    }
 }
 
 void bmotion(XEvent *e) {
-    if (!xw.pointerisvisible)
-    {
+    if (!xw.pointerisvisible) {
         XDefineCursor(xw.dpy, xw.win, xw.vpointer);
         xw.pointerisvisible = 1;
         if (!IS_SET(MODE_MOUSEMANY)) {
@@ -763,10 +761,12 @@ void bmotion(XEvent *e) {
 void cresize(int width, int height) {
     int col, row;
 
-    if (width != 0)
+    if (width != 0) {
         win.w = width;
-    if (height != 0)
+    }
+    if (height != 0) {
         win.h = height;
+    }
 
     col = (win.w - 2 * borderpx) / win.cw;
     row = (win.h - 2 * borderpx) / win.ch;
@@ -795,7 +795,7 @@ void xresize(int col, int row) {
 }
 
 ushort sixd_to_16bit(int x) {
-    return x == 0 ? 0 : 0x3737 + 0x2828 * x;
+    return (x == 0) ? 0 : 0x3737 + 0x2828 * x;
 }
 
 int xloadcolor(int i, const char *name, Color *ncolor) {
@@ -845,8 +845,9 @@ void xloadcols(void) {
     }
 
     /* Set alpha value of bg color */
-    if (opt_alpha)
+    if (opt_alpha) {
         alpha = strtof(opt_alpha, NULL);
+    }
 
     dc.col[defaultbg].color.alpha = (unsigned short)(0xFFFF * alpha);
     dc.col[defaultbg].pixel &= 0x00FFFFFF;

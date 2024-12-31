@@ -62,21 +62,21 @@
 /* Data for U+2500 - U+259F except dashes/diagonals */
 static const unsigned short boxdata[256] = {
   /* light lines */
-  [0x00] = BDL + LH,       /* light horizontal */
-  [0x02] = BDL + LV,       /* light vertical */
-  [0x0c] = BDL + LD + LR,  /* light down and right */
-  [0x10] = BDL + LD + LL,  /* light down and left */
-  [0x14] = BDL + LU + LR,  /* light up and right */
-  [0x18] = BDL + LU + LL,  /* light up and left */
-  [0x1c] = BDL + LV + LR,  /* light vertical and right */
-  [0x24] = BDL + LV + LL,  /* light vertical and left */
-  [0x2c] = BDL + LH + LD,  /* light horizontal and down */
-  [0x34] = BDL + LH + LU,  /* light horizontal and up */
-  [0x3c] = BDL + LV + LH,  /* light vertical and horizontal */
-  [0x74] = BDL + LL,       /* light left */
-  [0x75] = BDL + LU,       /* light up */
-  [0x76] = BDL + LR,       /* light right */
-  [0x77] = BDL + LD,       /* light down */
+  [0x00] = BDL + LH,       /* Light horizontal */
+  [0x02] = BDL + LV,       /* Light vertical */
+  [0x0c] = BDL + LD + LR,  /* Light down and right */
+  [0x10] = BDL + LD + LL,  /* Light down and left */
+  [0x14] = BDL + LU + LR,  /* Light up and right */
+  [0x18] = BDL + LU + LL,  /* Light up and left */
+  [0x1c] = BDL + LV + LR,  /* Light vertical and right */
+  [0x24] = BDL + LV + LL,  /* Light vertical and left */
+  [0x2c] = BDL + LH + LD,  /* Light horizontal and down */
+  [0x34] = BDL + LH + LU,  /* Light horizontal and up */
+  [0x3c] = BDL + LV + LH,  /* Light vertical and horizontal */
+  [0x74] = BDL + LL,       /* Light left */
+  [0x75] = BDL + LU,       /* Light up */
+  [0x76] = BDL + LR,       /* Light right */
+  [0x77] = BDL + LD,       /* Light down */
 
   /* heavy [+light] lines */
   [0x01] = BDL + HH,
@@ -145,7 +145,7 @@ static const unsigned short boxdata[256] = {
   [0x7e] = BDL + HL + LR,
   [0x7f] = BDL + HU + LD,
 
-  /* double [+light] lines */
+  /* Double [+light] lines */
   [0x50] = BDL + DH,
   [0x51] = BDL + DV,
   [0x52] = BDL + DR + LD,
