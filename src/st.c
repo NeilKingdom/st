@@ -1,4 +1,4 @@
-/* See LICENSE for license details. */
+// See LICENSE for license details.
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -31,17 +31,17 @@ extern char *argv0;
 #include <libutil.h>
 #endif
 
-/* Arbitrary sizes */
-#define UTF_INVALID   0xFFFD
-#define UTF_SIZ       4
-#define ESC_BUF_SIZ   (128*UTF_SIZ)
-#define ESC_ARG_SIZ   16
-#define STR_BUF_SIZ   ESC_BUF_SIZ
-#define STR_ARG_SIZ   ESC_ARG_SIZ
+// Arbitrary sizes
+#define UTF_INVALID 0xFFFD
+#define UTF_SIZ     4
+#define ESC_BUF_SIZ (128 * UTF_SIZ)
+#define ESC_ARG_SIZ 16
+#define STR_BUF_SIZ ESC_BUF_SIZ
+#define STR_ARG_SIZ ESC_ARG_SIZ
 
 #define IS_SET(flag)		((term.mode & (flag)) != 0)
-#define ISCONTROLC0(c)		(BETWEEN(c, 0, 0x1f) || (c) == 0x7f)
-#define ISCONTROLC1(c)		(BETWEEN(c, 0x80, 0x9f))
+#define ISCONTROLC0(c)		(BETWEEN(c, 0, 0x1F) || (c) == 0x7F)
+#define ISCONTROLC1(c)		(BETWEEN(c, 0x80, 0x9F))
 #define ISCONTROL(c)		(ISCONTROLC0(c) || ISCONTROLC1(c))
 #define ISDELIM(u)		    (u && wcschr(worddelimiters, u))
 
@@ -50,13 +50,13 @@ extern char *argv0;
 #define TLINE(y)            (TSCREEN.buffer[TLINEOFFSET(y)])
 
 enum term_mode {
-    MODE_WRAP        = 1 << 0,
-    MODE_INSERT      = 1 << 1,
-    MODE_ALTSCREEN   = 1 << 2,
-    MODE_CRLF        = 1 << 3,
-    MODE_ECHO        = 1 << 4,
-    MODE_PRINT       = 1 << 5,
-    MODE_UTF8        = 1 << 6,
+    MODE_WRAP      = 1 << 0,
+    MODE_INSERT    = 1 << 1,
+    MODE_ALTSCREEN = 1 << 2,
+    MODE_CRLF      = 1 << 3,
+    MODE_ECHO      = 1 << 4,
+    MODE_PRINT     = 1 << 5,
+    MODE_UTF8      = 1 << 6,
 };
 
 enum cursor_movement {
@@ -81,13 +81,13 @@ enum charset {
 };
 
 enum escape_state {
-    ESC_START      = 1,
-    ESC_CSI        = 2,
-    ESC_STR        = 4,  /* DCS, OSC, PM, APC */
-    ESC_ALTCHARSET = 8,
-    ESC_STR_END    = 16, /* A final string was encountered */
-    ESC_TEST       = 32, /* Enter in test mode */
-    ESC_UTF8       = 64,
+    ESC_START      = 1 << 0,
+    ESC_CSI        = 1 << 1,
+    ESC_STR        = 1 << 2, // DCS, OSC, PM, APC
+    ESC_ALTCHARSET = 1 << 3,
+    ESC_STR_END    = 1 << 4, // A final string was encountered
+    ESC_TEST       = 1 << 5, // Enter in test mode
+    ESC_UTF8       = 1 << 6,
 };
 
 typedef struct {
@@ -115,63 +115,63 @@ typedef struct {
     int alt;
 } Selection;
 
-/* Screen lines */
+// Screen lines
 typedef struct {
-    Line* buffer;  /* Ring buffer */
-	int size;      /* Size of buffer */
-	int cur;       /* Start of active screen */
-	int off;       /* Scrollback line offset */
-	TCursor sc;    /* Saved cursor */
+    Line* buffer;  // Ring buffer
+	int size;      // Size of buffer
+	int cur;       // Start of active screen
+	int off;       // Scrollback line offset
+	TCursor sc;    // Saved cursor
 } LineBuffer;
 
-/* Internal representation of the screen */
+// Internal representation of the screen
 typedef struct {
-    int row;                /* nb row */
-    int col;                /* nb col */
-	LineBuffer screen[2];   /* Screen and alternate screen */
-	int linelen;            /* Allocated line length */
-    int *dirty;             /* Dirtyness of lines */
-    TCursor c;              /* Cursor */
-    int ocx;                /* Old cursor col */
-    int ocy;                /* Old cursor row */
-    int top;                /* Top scroll limit */
-    int bot;                /* Bottom scroll limit */
-    int mode;               /* Terminal mode flags */
-    int esc;                /* Escape state flags */
-    char trantbl[4];        /* Charset table translation */
-    int charset;            /* Current charset */
-    int icharset;           /* Selected charset for sequence */
+    int row;                // nb row
+    int col;                // nb col
+	LineBuffer screen[2];   // Screen and alternate screen
+	int linelen;            // Allocated line length
+    int *dirty;             // Dirtyness of lines
+    TCursor c;              // Cursor
+    int ocx;                // Old cursor col
+    int ocy;                // Old cursor row
+    int top;                // Top scroll limit
+    int bot;                // Bottom scroll limit
+    int mode;               // Terminal mode flags
+    int esc;                // Escape state flags
+    char trantbl[4];        // Charset table translation
+    int charset;            // Current charset
+    int icharset;           // Selected charset for sequence
     int *tabs;
-    Rune lastc;             /* Last printed char outside of sequence, 0 if control */
+    Rune lastc;             // Last printed char outside of sequence, 0 if control
 } Term;
 
-/* CSI Escape sequence structs */
-/* ESC '[' [[ [<priv>] <arg> [;]] <mode> [<mode>]] */
+// CSI Escape sequence structs
+// ESC '[' [[ [<priv>] <arg> [;]] <mode> [<mode>]]
 typedef struct {
-    char buf[ESC_BUF_SIZ]; /* Raw string */
-    size_t len;            /* Raw string length */
+    char buf[ESC_BUF_SIZ]; // Raw string
+    size_t len;            // Raw string length
     char priv;
     int arg[ESC_ARG_SIZ];
-    int narg;              /* nb of args */
+    int narg;              // nb of args
     char mode[2];
 } CSIEscape;
 
-/* STR Escape sequence structs */
-/* ESC type [[ [<priv>] <arg> [;]] <mode>] ESC '\' */
+// STR Escape sequence structs
+// ESC type [[ [<priv>] <arg> [;]] <mode>] ESC '\'
 typedef struct {
-    char type;             /* ESC type ... */
-    char *buf;             /* Allocated raw string */
-    size_t siz;            /* Allocation size */
-    size_t len;            /* Raw string length */
+    char type;                  // ESC type ...
+    char *buf;                  // Allocated raw string
+    size_t siz;                 // Allocation size
+    size_t len;                 // Raw string length
     char *args[STR_ARG_SIZ];
-    int narg;              /* nb of args */
+    int narg;                   // nb of args
 } STREscape;
 
-static void execsh(char *, char **);
+static void execsh(char*, char**);
 static int  chdir_by_pid(pid_t pid);
-static void stty(char **);
+static void stty(char**);
 static void sigchld(int);
-static void ttywriteraw(const char *, size_t);
+static void ttywriteraw(const char*, size_t);
 
 static void csidump(void);
 static void csihandle(void);
@@ -184,7 +184,7 @@ static void strhandle(void);
 static void strparse(void);
 static void strreset(void);
 
-static void tprinter(char *, size_t);
+static void tprinter(char*, size_t);
 static void tdumpsel(void);
 static void tdumpline(int);
 static void tdump(void);
@@ -203,18 +203,18 @@ static void tputc(Rune);
 static void treset(void);
 static void tscrollup(int, int);
 static void tscrolldown(int, int);
-static void tsetattr(const int *, int);
-static void tsetchar(Rune, const Glyph *, int, int);
+static void tsetattr(const int*, int);
+static void tsetchar(Rune, const Glyph*, int, int);
 static void tsetdirt(int, int);
 static void tsetscroll(int, int);
 static void tswapscreen(void);
-static void tsetmode(int, int, const int *, int);
-static int  twrite(const char *, int, int);
+static void tsetmode(int, int, const int*, int);
+static int  twrite(const char*, int, int);
 static void tfulldirt(void);
 static void tcontrolcode(uchar );
 static void tdectest(char );
 static void tdefutf8(char);
-static int32_t tdefcolor(const int *, int *, int);
+static int32_t tdefcolor(const int*, int*, int);
 static void tdeftran(char);
 static void tstrsequence(uchar);
 
@@ -224,19 +224,19 @@ static Line ensureline(Line);
 
 static void selnormalize(void);
 static void selscroll(int, int);
-static void selsnap(int *, int *, int);
+static void selsnap(int*, int*, int);
 
-static size_t utf8decode(const char *, Rune *, size_t);
+static size_t utf8decode(const char*, Rune*, size_t);
 static Rune   utf8decodebyte(char, size_t *);
 static char   utf8encodebyte(Rune, size_t);
-static size_t utf8validate(Rune *, size_t);
+static size_t utf8validate(Rune*, size_t);
 
-static char *base64dec(const char *);
-static char  base64dec_getc(const char **);
+static char *base64dec(const char*);
+static char  base64dec_getc(const char**);
 
-static ssize_t xwrite(int, const char *, size_t);
+static ssize_t xwrite(int, const char*, size_t);
 
-/* Globals */
+// Globals
 static Term term;
 static Selection sel;
 static CSIEscape csiescseq;
@@ -256,7 +256,9 @@ ssize_t xwrite(int fd, const char *s, size_t len) {
 
     while (len > 0) {
         r = write(fd, s, len);
-        if (r < 0) return r;
+        if (r < 0) {
+            return r;
+        }
         len -= r;
         s += r;
     }

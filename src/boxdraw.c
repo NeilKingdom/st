@@ -7,32 +7,32 @@
 #include "st.h"
 #include "boxdraw_data.h"
 
-/* Rounded non-negative integers division of n / d  */
+// Rounded non-negative integers division of n / d
 #define DIV(n, d) (((n) + (d) / 2) / (d))
 
 static Display *xdpy;
 static Colormap xcmap;
 static XftDraw *xd;
-static Visual *xvis;
+static Visual  *xvis;
 
 static void drawbox(int, int, int, int, XftColor *, XftColor *, ushort);
 static void drawboxlines(int, int, int, int, XftColor *, ushort);
 
-/* Public API */
+// Public API
 
 void boxdraw_xinit(Display *dpy, Colormap cmap, XftDraw *draw, Visual *vis) {
     xdpy = dpy; xcmap = cmap; xd = draw, xvis = vis;
 }
 
 int isboxdraw(Rune u) {
-    Rune block = u & ~0xff;
-    return (boxdraw && block == 0x2500 && boxdata[(uint8_t)u]) ||
-    (boxdraw_braille && block == 0x2800);
+    Rune block = u & ~0xFF;
+    return (boxdraw && block == 0x2500 && boxdata[(uint8_t)u])
+        || (boxdraw_braille && block == 0x2800);
 }
 
-/* The "index" is actually the entire shape data encoded as ushort */
+// The "index" is actually the entire shape data encoded as ushort
 ushort boxdrawindex(const Glyph *g) {
-    if (boxdraw_braille && (g->u & ~0xff) == 0x2800) {
+    if (boxdraw_braille && (g->u & ~0xFF) == 0x2800) {
         return BRL | (uint8_t)g->u;
     }
     if (boxdraw_bold && (g->mode & ATTR_BOLD)) {
@@ -48,34 +48,34 @@ void drawboxes(
     const XftGlyphFontSpec *specs,
     int len
 ) {
-    for (; len-- > 0; x += cw, specs++) {
+    for (; len > 0; x += cw, specs++, len--) {
         drawbox(x, y, cw, ch, fg, bg, (ushort)specs->glyph);
     }
 }
 
-/* Implementation */
+// Implementation
 
 void drawbox(int x, int y, int w, int h, XftColor *fg, XftColor *bg, ushort bd) {
-    ushort cat = bd & ~(BDB | 0xFF);  /* Mask out bold and data */
+    ushort cat = bd & ~(BDB | 0xFF);  // Mask out bold and data
     if (bd & (BDL | BDA)) {
-        /* Lines (light/double/heavy/arcs) */
+        // Lines (light/double/heavy/arcs)
         drawboxlines(x, y, w, h, fg, bd);
     } else if (cat == BBD) {
-        /* Lower (8-X)/8 block */
+        // Lower (8-X)/8 block
         int d = DIV((uint8_t)bd * h, 8);
         XftDrawRect(xd, fg, x, y + d, w, h - d);
     } else if (cat == BBU) {
-        /* Upper X/8 block */
+        // Upper X/8 block
         XftDrawRect(xd, fg, x, y, w, DIV((uint8_t)bd * h, 8));
     } else if (cat == BBL) {
-        /* Left X/8 block */
+        // Left X/8 block
         XftDrawRect(xd, fg, x, y, DIV((uint8_t)bd * w, 8), h);
     } else if (cat == BBR) {
-        /* Right (8-X)/8 block */
+        // Right (8-X)/8 block
         int d = DIV((uint8_t)bd * w, 8);
         XftDrawRect(xd, fg, x + d, y, w - d, h);
     } else if (cat == BBQ) {
-        /* Quadrants */
+        // Quadrants
         int w2 = DIV(w, 2), h2 = DIV(h, 2);
         if (bd & TL) {
             XftDrawRect(xd, fg, x, y, w2, h2);
@@ -90,20 +90,20 @@ void drawbox(int x, int y, int w, int h, XftColor *fg, XftColor *bg, ushort bd) 
             XftDrawRect(xd, fg, x + w2, y + h2, w - w2, h - h2);
         }
     } else if (bd & BBS) {
-        /* Shades - data is 1/2/3 for 25%/50%/75% alpha, respectively */
+        // Shades - data is 1/2/3 for 25%/50%/75% alpha, respectively
         int d = (uint8_t)bd;
         XftColor xfc;
         XRenderColor xrc = { .alpha = 0xffff };
 
-        xrc.red = DIV(fg->color.red * d + bg->color.red * (4 - d), 4);
+        xrc.red   = DIV(fg->color.red * d + bg->color.red * (4 - d), 4);
         xrc.green = DIV(fg->color.green * d + bg->color.green * (4 - d), 4);
-        xrc.blue = DIV(fg->color.blue * d + bg->color.blue * (4 - d), 4);
+        xrc.blue  = DIV(fg->color.blue * d + bg->color.blue * (4 - d), 4);
 
         XftColorAllocValue(xdpy, xvis, xcmap, &xrc, &xfc);
         XftDrawRect(xd, &xfc, x, y, w, h);
         XftColorFree(xdpy, xvis, xcmap, &xfc);
     } else if (cat == BRL) {
-        /* Braille, each data bit corresponds to one dot at 2x4 grid */
+        // Braille, each data bit corresponds to one dot at 2x4 grid
         int w1 = DIV(w, 2);
         int h1 = DIV(h, 4), h2 = DIV(h, 2), h3 = DIV(3 * h, 4);
 
@@ -145,7 +145,7 @@ void drawboxlines(int x, int y, int w, int h, XftColor *fg, ushort bd) {
         int arc = bd & BDA;
         int multi_light = light & (light - 1);
         int multi_double = double_ & (double_ - 1);
-        /* Light crosses double only at DH+LV, DV+LH (ref. shapes) */
+        // Light crosses double only at DH+LV, DV+LH (ref. shapes)
         int d = arc || (multi_double && !multi_light) ? -s : 0;
 
         if (bd & LL) {
@@ -162,7 +162,7 @@ void drawboxlines(int x, int y, int w, int h, XftColor *fg, ushort bd) {
         }
     }
 
-    /* Double lines - also align with light to form heavy when combined */
+    // Double lines - also align with light to form heavy when combined
     if (double_) {
         /*
             Going clockwise, for each double-ray: p is additional length

@@ -243,22 +243,22 @@ static MouseShortcut mshortcuts[] = {
 
 static Shortcut shortcuts[] = {
     /* Mask               Keysym         Function       Argument */
-    { XK_ANY_MOD,         XK_Break,      sendbreak,     { .i =  0 }},
-    { ControlMask,        XK_Print,      toggleprinter, { .i =  0 }},
-    { ShiftMask,          XK_Print,      printscreen,   { .i =  0 }},
-    { XK_ANY_MOD,         XK_Print,      printsel,      { .i =  0 }},
-    { TERMMOD,            XK_Num_Lock,   numlock,       { .i =  0 }},
-    { MODKEY,             XK_minus,      zoom,          { .f = -2 }}, /* Decrease zoom */
-    { MODKEY | ShiftMask, XK_plus,       zoom,          { .f = +2 }}, /* Increase zoom */
-    { MODKEY,             XK_equal,      zoomreset,     { .f =  0 }}, /* Reset zoom */
-    { MODKEY,             XK_c,          clipcopy,      { .i =  0 }}, /* Copy to clipboard */
-    { MODKEY,             XK_v,          clippaste,     { .i =  0 }}, /* Paste from clipboard */
-    { MODKEY,             XK_y,          selpaste,      { .i =  0 }}, /* Copy to selection */
-    { ShiftMask,          XK_Insert,     selpaste,      { .i =  0 }}, /* Paste from selection */
-    { MODKEY,             XK_Return,     newterm,       { .i =  0 }}, /* Open new shell in the current directory */
-    { MODKEY,             XK_9,          chgalpha,      { .f = -1 }}, /* Decrease opacity */
-    { MODKEY | ShiftMask, XK_parenright, chgalpha,      { .f = +1 }}, /* Increase opacity */
-    { MODKEY,             XK_0,          chgalpha,      { .f =  0 }}, /* Reset alpha */
+/*  { XK_ANY_MOD,  XK_Break,      sendbreak,     { .i =  0 }}, */
+/*  { ControlMask, XK_Print,      toggleprinter, { .i =  0 }}, */
+/*  { ShiftMask,   XK_Print,      printscreen,   { .i =  0 }}, */
+/*  { XK_ANY_MOD,  XK_Print,      printsel,      { .i =  0 }}, */
+/*  { TERMMOD,     XK_Num_Lock,   numlock,       { .i =  0 }}, */
+/*  { MODKEY,      XK_y,          selpaste,      { .i =  0 }}, */ /* Copy to selection */
+/*  { ShiftMask,   XK_Insert,     selpaste,      { .i =  0 }}, */ /* Paste from selection */
+    { MODKEY,      XK_c,          clipcopy,      { .i =  0 }}, /* Copy to clipboard */
+    { MODKEY,      XK_v,          clippaste,     { .i =  0 }}, /* Paste from clipboard */
+    { MODKEY,      XK_Return,     newterm,       { .i =  0 }}, /* Open new shell in the current directory */
+    { MODKEY,      XK_minus,      zoom,          { .f = -2 }}, /* Decrease zoom */
+    { MODKEY,      XK_backslash,  zoom,          { .f = +2 }}, /* Increase zoom */
+    { MODKEY,      XK_apostrophe, zoomreset,     { .f =  0 }}, /* Reset zoom */
+    { MODKEY,      XK_0,          chgalpha,      { .f = -1 }}, /* Decrease opacity */
+    { MODKEY,      XK_p,          chgalpha,      { .f = +1 }}, /* Increase opacity */
+    { MODKEY,      XK_semicolon,  chgalpha,      { .f =  0 }}, /* Reset alpha */
 };
 
 /*
